@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - IELTS Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Security Check -->
+    <script>
+        if (sessionStorage.getItem('adminAuthenticated') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-lg min-h-screen">
+            <div class="p-6 border-b">
+                <h1 class="text-2xl font-bold text-gray-800">📊 IELTS Admin</h1>
+                <p class="text-gray-600 text-sm">Teacher Portal</p>
+            </div>
+            
+            <nav class="mt-6">
+                <a href="dashboard.html" class="block py-3 px-6 bg-blue-50 text-blue-600 border-r-4 border-blue-600">
+                    <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                </a>
+                <a href="students.html" class="block py-3 px-6 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-users mr-3"></i>Students
+                </a>
+                <a href="lessons.html" class="block py-3 px-6 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-book-open mr-3"></i>Lessons
+                </a>
+                <a href="tests.html" class="block py-3 px-6 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-edit mr-3"></i>Tests
+                </a>
+                <a href="analytics.html" class="block py-3 px-6 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-chart-bar mr-3"></i>Analytics
+                </a>
+                <a href="#" onclick="adminLogout()" class="block py-3 px-6 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">Admin Dashboard</h2>
+                    <p class="text-gray-600">Welcome back, Teacher!</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">Last login: <span id="lastLoginTime"></span></span>
+                    <button onclick="adminLogout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-600">Total Students</p>
+                            <h3 class="text-3xl font-bold text-gray-800" id="totalStudents">0</h3>
+                        </div>
+                        <i class="fas fa-users text-3xl text-blue-500"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-green-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-600">Active Tests</p>
+                            <h3 class="text-3xl font-bold text-gray-800" id="activeTests">0</h3>
+                        </div>
+                        <i class="fas fa-edit text-3xl text-green-500"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-purple-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-600">Lessons This Month</p>
+                            <h3 class="text-3xl font-bold text-gray-800" id="totalLessons">0</h3>
+                        </div>
+                        <i class="fas fa-book-open text-3xl text-purple-500"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-orange-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-600">Avg. Progress</p>
+                            <h3 class="text-3xl font-bold text-gray-800" id="avgProgress">0%</h3>
+                        </div>
+                        <i class="fas fa-chart-line text-3xl text-orange-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Recent Activity -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-history mr-2"></i>Recent Activity
+                    </h3>
+                    <div id="recentActivity" class="space-y-3 max-h-64 overflow-y-auto">
+                        <!-- Activity will load here -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-bolt mr-2"></i>Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <button onclick="showAddStudentModal()" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg text-left hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-user-plus mr-3"></i>Add New Student
+                        </button>
+                        <button onclick="showCreateTestModal()" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg text-left hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus-circle mr-3"></i>Create New Test
+                        </button>
+                        <button onclick="showAddLessonModal()" class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg text-left hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-book-medical mr-3"></i>Add Lesson Material
+                        </button>
+                        <button onclick="location.href='tests.html'" class="w-full bg-orange-600 text-white py-3 px-4 rounded-lg text-left hover:bg-orange-700 transition-colors">
+                            <i class="fas fa-tasks mr-3"></i>Manage All Tests
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tests -->
+            <div class="mt-8 bg-white p-6 rounded-2xl shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Recent Tests</h3>
+                    <a href="tests.html" class="text-blue-600 hover:text-blue-800">View All →</a>
+                </div>
+                <div id="recentTests" class="space-y-3">
+                    <!-- Tests will load here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-2xl w-96">
+            <h3 class="text-xl font-bold mb-4">Add New Student</h3>
+            <form id="addStudentForm">
+                <div class="space-y-4">
+                    <input type="text" placeholder="Full Name" class="w-full p-3 border rounded-lg" required>
+                    <input type="email" placeholder="Email" class="w-full p-3 border rounded-lg" required>
+                    <input type="text" placeholder="Username" class="w-full p-3 border rounded-lg" required>
+                    <input type="password" placeholder="Password" class="w-full p-3 border rounded-lg" required>
+                    <select class="w-full p-3 border rounded-lg" id="studentGroupSelect">
+                        <option value="">Select Group</option>
+                        <option value="beginner">IELTS Beginner</option>
+                        <option value="intermediate">IELTS Intermediate</option>
+                        <option value="advanced">IELTS Advanced</option>
+                    </select>
+                </div>
+                <div class="flex space-x-3 mt-6">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg">Add Student</button>
+                    <button type="button" onclick="hideModal('addStudentModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Test Modal -->
+    <div id="createTestModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-2xl w-96">
+            <h3 class="text-xl font-bold mb-4">Create New Test</h3>
+            <form id="createTestForm">
+                <div class="space-y-4">
+                    <input type="text" placeholder="Test Title" class="w-full p-3 border rounded-lg" required>
+                    <textarea placeholder="Test Description" class="w-full p-3 border rounded-lg" rows="3"></textarea>
+                    <select class="w-full p-3 border rounded-lg" required>
+                        <option value="">Select Test Type</option>
+                        <option value="listening">Listening</option>
+                        <option value="reading">Reading</option>
+                        <option value="writing">Writing</option>
+                        <option value="speaking">Speaking</option>
+                    </select>
+                    <input type="number" placeholder="Total Marks" class="w-full p-3 border rounded-lg" required>
+                </div>
+                <div class="flex space-x-3 mt-6">
+                    <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg">Create Test</button>
+                    <button type="button" onclick="hideModal('createTestModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Admin logout function
+        function adminLogout() {
+            sessionStorage.removeItem('adminAuthenticated');
+            sessionStorage.removeItem('adminLoginTime');
+            window.location.href = 'login.html';
+        }
+
+        // Modal functions
+        function showAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('hidden');
+            document.getElementById('addStudentModal').classList.add('flex');
+        }
+
+        function showCreateTestModal() {
+            document.getElementById('createTestModal').classList.remove('hidden');
+            document.getElementById('createTestModal').classList.add('flex');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        // Load dashboard data
+        function loadDashboardData() {
+            const students = JSON.parse(localStorage.getItem('students') || '[]');
+            const tests = JSON.parse(localStorage.getItem('tests') || '[]');
+            const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+            const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+            
+            // Update stats
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('activeTests').textContent = tests.filter(t => t.active).length;
+            document.getElementById('totalLessons').textContent = lessons.length;
+            
+            // Calculate average progress
+            const avgProgress = students.length > 0 ? 
+                students.reduce((sum, student) => sum + (student.progress || 0), 0) / students.length : 0;
+            document.getElementById('avgProgress').textContent = Math.round(avgProgress) + '%';
+            
+            // Update last login time
+            const loginTime = sessionStorage.getItem('adminLoginTime');
+            if (loginTime) {
+                document.getElementById('lastLoginTime').textContent = new Date(loginTime).toLocaleString();
+            }
+            
+            updateRecentActivity(activities);
+            updateRecentTests(tests);
+        }
+
+        function updateRecentActivity(activities) {
+            const container = document.getElementById('recentActivity');
+            const recentActivities = activities.slice(-5).reverse();
+            
+            container.innerHTML = recentActivities.map(activity => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-gray-700">${activity.action}</span>
+                    </div>
+                    <span class="text-sm text-gray-500">${activity.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateRecentTests(tests) {
+            const container = document.getElementById('recentTests');
+            const recentTests = tests.slice(-3).reverse();
+            
+            if (recentTests.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No tests created yet</p>';
+                return;
+            }
+            
+            container.innerHTML = recentTests.map(test => `
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold text-gray-800">${test.title}</h4>
+                        <p class="text-sm text-gray-600">Type: ${test.type} • Marks: ${test.marks}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-sm ${
+                        test.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }">
+                        ${test.active ? 'Active' : 'Draft'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Form handlers
+        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const students = JSON.parse(localStorage.getItem('students') || '[]');
+            
+            const newStudent = {
+                id: Date.now(),
+                name: this.querySelector('input[type="text"]').value,
+                email: this.querySelector('input[type="email"]').value,
+                username: this.querySelectorAll('input[type="text"]')[1].value,
+                password: this.querySelector('input[type="password"]').value,
+                group: document.getElementById('studentGroupSelect').value,
+                progress: 0,
+                joined: new Date().toISOString()
+            };
+            
+            students.push(newStudent);
+            localStorage.setItem('students', JSON.stringify(students));
+            
+            // Log activity
+            const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+            activities.push({
+                action: `Added student: ${newStudent.name}`,
+                time: new Date().toLocaleString()
+            });
+            localStorage.setItem('adminActivities', JSON.stringify(activities));
+            
+            alert('Student added successfully!');
+            hideModal('addStudentModal');
+            this.reset();
+            loadDashboardData();
+        });
+
+        document.getElementById('createTestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const tests = JSON.parse(localStorage.getItem('tests') || '[]');
+            
+            const newTest = {
+                id: Date.now(),
+                title: this.querySelector('input[type="text"]').value,
+                description: this.querySelector('textarea').value,
+                type: this.querySelector('select').value,
+                marks: parseInt(this.querySelector('input[type="number"]').value),
+                active: true,
+                created: new Date().toISOString(),
+                questions: []
+            };
+            
+            tests.push(newTest);
+            localStorage.setItem('tests', JSON.stringify(tests));
+            
+            // Log activity
+            const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+            activities.push({
+                action: `Created test: ${newTest.title}`,
+                time: new Date().toLocaleString()
+            });
+            localStorage.setItem('adminActivities', JSON.stringify(activities));
+            
+            alert('Test created successfully!');
+            hideModal('createTestModal');
+            this.reset();
+            loadDashboardData();
+        });
+
+        // Auto-logout after 2 hours
+        setTimeout(() => {
+            if (sessionStorage.getItem('adminAuthenticated')) {
+                alert('Session expired for security. Please login again.');
+                adminLogout();
+            }
+        }, 2 * 60 * 60 * 1000);
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+</body>
+</html>
