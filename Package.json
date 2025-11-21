@@ -1,0 +1,15 @@
+{
+  "name": "ielts-secure-platform",
+  "version": "1.0.0",
+  "description": "Secure IELTS Teaching Platform with Admin Protection",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "build": "echo 'No build process needed'",
+    "start": "python3 -m http.server 3000"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14"
+  }
+}
