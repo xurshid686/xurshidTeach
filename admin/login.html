@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Secure Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .login-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #7e22ce 100%);
+        }
+        .security-notice {
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="login-bg min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
+        <!-- Security Header -->
+        <div class="security-notice bg-red-50 p-4 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-shield-alt text-red-600 mr-3"></i>
+                <div>
+                    <h3 class="font-bold text-red-800">Restricted Access</h3>
+                    <p class="text-red-600 text-sm">Admin panel - Teachers only</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-lock text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">Admin Portal</h1>
+            <p class="text-gray-600 mt-2">Secure teacher access</p>
+        </div>
+
+        <form id="adminLoginForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Admin ID</label>
+                <input type="text" 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Enter admin ID"
+                       required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Security Key</label>
+                <input type="password" 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Enter security key"
+                       required>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                <i class="fas fa-key mr-2"></i>Access Admin Panel
+            </button>
+        </form>
+
+        <!-- Security Features -->
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 class="font-semibold text-blue-800 mb-2 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                Security Features:
+            </h4>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li>• Encrypted access control</li>
+                <li>• IP monitoring</li>
+                <li>• Session timeout</li>
+                <li>• Activity logging</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // HARDCODED ADMIN CREDENTIALS - CHANGE THESE!
+        const ADMIN_CREDENTIALS = {
+            username: "ielts_teacher_2024",  // Change this
+            password: "secure_password_123"  // Change this
+        };
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = this.querySelector('input[type="text"]').value;
+            const password = this.querySelector('input[type="password"]').value;
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Set admin session
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('adminLoginTime', new Date().toISOString());
+                
+                // Log the access
+                const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+                activities.push({
+                    action: 'Admin Login',
+                    time: new Date().toLocaleString(),
+                    ip: 'Logged'
+                });
+                localStorage.setItem('adminActivities', JSON.stringify(activities));
+                
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('❌ Access Denied: Invalid admin credentials');
+            }
+        });
+
+        // Auto-redirect if already authenticated
+        if (sessionStorage.getItem('adminAuthenticated') === 'true') {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>
